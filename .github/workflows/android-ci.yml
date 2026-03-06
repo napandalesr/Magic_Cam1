@@ -29,34 +29,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gradle
     
-      - name: Generate Gradle Wrapper if missing
-        run: |
-          if [ ! -f "./gradlew" ]; then
-            echo "Gradle wrapper not found. Generating..."
-            gradle wrapper
-          else
-            echo "Gradle wrapper already exists."
-          fi
-    
-      - name: Make gradlew executable
-        run: chmod +x gradlew
-    
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*','**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
     
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
     
       - name: Build Release APK
         if: github.ref == 'refs/heads/main'
-        run: ./gradlew assembleRelease --stacktrace
+        run: gradle assembleRelease --stacktrace
     
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
