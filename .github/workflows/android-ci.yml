@@ -10,12 +10,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
+    
       - name: Checkout repository
         uses: actions/checkout@v4
     
-      - name: Setup Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,12 +25,15 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
     
-      - name: Install Gradle
+      - name: Install Gradle 8
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
+          wget https://services.gradle.org/distributions/gradle-8.7-bin.zip
+          unzip gradle-8.7-bin.zip
+          sudo mv gradle-8.7 /opt/gradle
+          sudo ln -s /opt/gradle/bin/gradle /usr/local/bin/gradle
+          gradle -v
     
-      - name: Cache Gradle dependencies
+      - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
@@ -42,21 +46,9 @@ jobs:
       - name: Build Debug APK
         run: gradle assembleDebug --stacktrace
     
-      - name: Build Release APK
-        if: github.ref == 'refs/heads/main'
-        run: gradle assembleRelease --stacktrace
-    
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
     
-      - name: Upload Release APK
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release-apk
-          path: app/build/outputs/apk/release/app-release.apk
-          retention-days: 90
